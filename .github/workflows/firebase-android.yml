@@ -20,6 +20,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -31,6 +39,10 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
+
+      - name: Set up local.properties       # ✅ NEW STEP
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
       - name: Build Release APK
         working-directory: android
