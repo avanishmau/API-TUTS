@@ -1,0 +1,62 @@
+name: Flutter Android CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+      - staging
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 🧰 Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 📦 Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # =========================
+      # 🔨 ANDROID BUILD
+      # =========================
+
+      - name: Build DEV APK
+        if: github.ref == 'refs/heads/develop'
+        run: flutter build apk --flavor dev -t lib/main_dev.dart
+
+      - name: Build STAGING APK
+        if: github.ref == 'refs/heads/staging'
+        run: flutter build apk --flavor staging -t lib/main_staging.dart
+
+      # =========================
+      # 🚀 DISTRIBUTION
+      # =========================
+
+      - name: Distribute DEV APK
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-dev.apk \
+          --app $FIREBASE_APP_ID_DEV \
+          --groups "dev-testers" \
+          --release-notes "DEV build from CI" \
+          --token $FIREBASE_TOKEN
+
+      - name: Distribute STAGING APK
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-staging.apk \
+          --app $FIREBASE_APP_ID_STAGING \
+          --groups "qa-testers" \
+          --release-notes "STAGING build from CI" \
+          --token $FIREBASE_TOKEN
