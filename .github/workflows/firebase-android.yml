@@ -33,18 +33,18 @@ jobs:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
           echo "flutter.sdk=$(which flutter | sed 's/\/bin\/flutter//')" >> android/local.properties
 
-      # ✅ NEW: Decode keystore from secret
+      # Decode keystore into android/app/ folder
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
-      # ✅ NEW: Create key.properties file
+      # Use absolute path in storeFile
       - name: Create key.properties
         run: |
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
+          echo "storeFile=${{ github.workspace }}/android/app/upload-keystore.jks" >> android/key.properties
 
       # ✅ CHANGED: flutter build apk → flutter build apk --release (signing is auto picked from key.properties)
       - name: Build Release APK
