@@ -1,0 +1,55 @@
+name: Firebase App Distribution - iOS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  distribute_ios:
+    runs-on: macos-latest      # iOS MUST run on macOS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Build & Archive iOS app
+        run: |
+          xcodebuild archive \
+            -workspace ios/YourApp.xcworkspace \
+            -scheme YourApp \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/YourApp.xcarchive \
+            -allowProvisioningUpdates \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/YourApp.xcarchive \
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -exportPath $RUNNER_TEMP/ipa
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_IOS_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: testers
+          releaseNotes: |
+            Build from commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+          file: ${{ runner.temp }}/ipa/YourApp.ipa
