@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>ad-hoc</string>           <!-- ad-hoc for Firebase Distribution -->
+
+  <key>teamID</key>
+  <string>YOUR_TEAM_ID</string>     <!-- replace with your Apple Team ID -->
+
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>com.example.apituts.api</key>   <!-- your bundle ID -->
+    <string>YOUR_PROFILE_NAME</string>   <!-- replace with provisioning profile name -->
+  </dict>
+
+  <key>signingStyle</key>
+  <string>manual</string>
+
+  <key>stripSwiftSymbols</key>
+  <true/>
+
+  <key>uploadBitcode</key>
+  <false/>
+
+  <key>uploadSymbols</key>
+  <true/>
+</dict>
+</plist>
